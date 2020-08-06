@@ -12,7 +12,8 @@ struct ___VARIABLE_sceneName___View: View {
     }
 
     static func build() -> some View {
-        let intent = ___VARIABLE_sceneName___Intent()
+        let model = ___VARIABLE_sceneName___Model()
+        let intent = ___VARIABLE_sceneName___Intent(model: model)
         let view = ___VARIABLE_sceneName___View(intent: intent)
         return view
     }

@@ -10,8 +10,8 @@ class ___VARIABLE_sceneName___Intent: ObservableObject {
     private var sceneNameModel: ___VARIABLE_sceneName___Model! { model as? ___VARIABLE_sceneName___Model }
     private var cancellable: Set<AnyCancellable> = []
 
-    init() {
-        self.model = ___VARIABLE_sceneName___Model()
+    init(model: ___VARIABLE_sceneName___Modeling) {
+        self.model = model
         cancellable.insert(sceneNameModel.objectWillChange.sink { self.objectWillChange.send() })
     }
 }
