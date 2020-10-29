@@ -31,7 +31,7 @@ private extension ___FILEBASENAMEASIDENTIFIER___ {
                 Alert(title: Text(title), message: Text(message))
             }).toAnyView()
 
-        default:
+        case .none:
             return EmptyView().toAnyView()
         }
     }
