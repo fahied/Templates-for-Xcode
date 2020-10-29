@@ -37,6 +37,10 @@ private extension ___FILEBASENAMEASIDENTIFIER___ {
     }
 }
 
+private extension View {
+    func toAnyView() -> AnyView { AnyView(self) }
+}
+
 #if DEBUG
 struct ___FILEBASENAMEASIDENTIFIER____Previews: PreviewProvider {
     static let routeSubject = PassthroughSubject<___FILEBASENAMEASIDENTIFIER___.ScreenType, Never>()
