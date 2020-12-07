@@ -7,29 +7,48 @@ struct ___FILEBASENAMEASIDENTIFIER___: View {
 
     enum ScreenType {
         case alert(title: String, message: String)
+        case exit
+    }
+    enum ActionType {
+        case dissmissed(screen: ScreenType)
     }
 
+    // MARK: API
+    var action: (ActionType) -> Void
     let screen: PassthroughSubject<ScreenType, Never>
 
+    // MARK: Private
+    @Environment(\.presentationMode) private var presentationMode
     @State private var screenType: ScreenType? = nil
 
+    // MARK: Live cycle
     var body: some View {
-        displayView()
-            .onReceive(screen) { self.screenType = $0 }
+        displayView().onReceive(screen) { self.screenType = $0 }
     }
 }
 
 private extension ___FILEBASENAMEASIDENTIFIER___ {
 
     private func displayView() -> some View {
-        let isVisibleScreen = Binding<Bool> { screenType != nil } set: { if !$0 { screenType = nil } }
-
+        let isVisible = Binding<Bool>(get: { screenType != nil }, set: {
+            guard !$0 else { return }
+            if let type = screenType {
+                self.action(.dissmissed(screen: type))
+            }
+            screenType = nil
+        })
+        /* OR
+        let isVisible = Binding<Bool>(get: { screenType != nil }, set: { if !$0 { screenType = nil } })
+         */
         switch screenType {
-        // Alert
         case .alert(let title, let message):
-            return Spacer().alert(isPresented: isVisibleScreen, content: {
+            return Spacer().alert(isPresented: isVisible, content: {
                 Alert(title: Text(title), message: Text(message))
             }).toAnyView()
+
+        case .exit:
+            presentationMode.wrappedValue.dismiss()
+            return EmptyView().toAnyView()
 
         case .none:
             return EmptyView().toAnyView()
@@ -53,7 +72,7 @@ struct ___FILEBASENAMEASIDENTIFIER____Previews: PreviewProvider {
                 self.routeSubject.send(.alert(title: "Error", message: "Something went wrong"))
             }, label: { Text("Display Screen") })
         }
-        .overlay(___FILEBASENAMEASIDENTIFIER___(screen: routeSubject))
+        .overlay(___FILEBASENAMEASIDENTIFIER___(action: { _ in },screen: routeSubject))
     }
 }
 #endif
