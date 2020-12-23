@@ -9,8 +9,13 @@ struct ___FILEBASENAMEASIDENTIFIER___: View {
         case alert(title: String, message: String)
         case exit
     }
+
     enum ActionType {
         case dissmissed(screen: ScreenType)
+    }
+
+    private class HolderScreenType: ObservableObject {
+        @Published var type: ScreenType?
     }
 
     // MARK: API
@@ -19,28 +24,28 @@ struct ___FILEBASENAMEASIDENTIFIER___: View {
 
     // MARK: Private
     @Environment(\.presentationMode) private var presentationMode
-    @State private var screenType: ScreenType? = nil
+    @StateObject private var screenType = HolderScreenType()
 
     // MARK: Live cycle
     var body: some View {
-        displayView().onReceive(screen) { self.screenType = $0 }
+        displayView().onReceive(screen) { self.screenType.type = $0 }
     }
 }
 
 private extension ___FILEBASENAMEASIDENTIFIER___ {
 
     private func displayView() -> some View {
-        let isVisible = Binding<Bool>(get: { screenType != nil }, set: {
+        let isVisible = Binding<Bool>(get: { screenType.type != nil }, set: {
             guard !$0 else { return }
-            if let type = screenType {
+            if let type = screenType.type {
                 self.action(.dissmissed(screen: type))
             }
-            screenType = nil
+            screenType.type = nil
         })
         /* OR
-        let isVisible = Binding<Bool>(get: { screenType != nil }, set: { if !$0 { screenType = nil } })
+        let isVisible = Binding<Bool>(get: { screenType.type != nil }, set: { if !$0 { screenType.type = nil } })
          */
-        switch screenType {
+        switch screenType.type {
         case .alert(let title, let message):
             return Spacer().alert(isPresented: isVisible, content: {
                 Alert(title: Text(title), message: Text(message))
