@@ -3,27 +3,31 @@
 import SwiftUI
 import Combine
 
-protocol ___VARIABLE_sceneName___StateModel {
-    var isLoading: Bool { get }
-    var routerSubject: PassthroughSubject<___VARIABLE_sceneName___Router.ScreenType, Never> { get }
+class ___VARIABLE_sceneName___Model: ObservableObject, ___VARIABLE_sceneName___ModelStatePotocol {
+
+    @Published var title: String = "empty"
+
+    let routerSubject = PassthroughSubject<___VARIABLE_sceneName___RouteScreenType, Never>()
 }
 
-protocol ___VARIABLE_sceneName___DisplayModel {
-    func dispalyLoading()
+// MARK: - Actions Protocol
+
+extension ___VARIABLE_sceneName___Model: ___VARIABLE_sceneName___ModelActionsProtocol {
+
+    func update(title: String) {
+        self.title = title
+    }
 }
 
-// MARK: - ___VARIABLE_sceneName___Model & ___VARIABLE_sceneName___StateModel
-class ___VARIABLE_sceneName___Model: ObservableObject, ___VARIABLE_sceneName___StateModel {
+// MARK: - Route Protocol
 
-    @Published private(set) var isLoading: Bool = true
+extension ___VARIABLE_sceneName___Model: ___VARIABLE_sceneName___ModelRouteProtocol {
 
-    let routerSubject = PassthroughSubject<___VARIABLE_sceneName___Router.ScreenType, Never>()
-}
+    func routeToAlert(title: String, message: String?) {
+        routerSubject.send(.alert(title: title, message: message))
+    }
 
-// MARK: - ___VARIABLE_sceneName___DisplayModel
-extension ___VARIABLE_sceneName___Model: ___VARIABLE_sceneName___DisplayModel {
-
-    func dispalyLoading() {
-        isLoading = true
+    func exit() {
+        routerSubject.send(.exit)
     }
 }

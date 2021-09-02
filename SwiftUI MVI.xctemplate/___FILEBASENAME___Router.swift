@@ -3,36 +3,85 @@
 import SwiftUI
 import Combine
 
-struct ___VARIABLE_sceneName___Router: View {
-
-    enum ScreenType {
-        case alert(title: String, message: String)
-    }
-
-    let screen: PassthroughSubject<ScreenType, Never>
-
-    @State private var screenType: ScreenType? = nil
-
-    var body: some View {
-        displayView()
-            .onReceive(screen) { self.screenType = $0 }
-    }
+enum ___VARIABLE_sceneName___RouteScreenType {
+    case alert(title: String, message: String?)
+    case exit
 }
 
-private extension ___VARIABLE_sceneName___Router {
+struct ___VARIABLE_sceneName___Router: View {
 
-    private func displayView() -> some View {
-        let isVisibleScreen = Binding<Bool> { screenType != nil } set: { if !$0 { screenType = nil } }
+    let routePublisher: AnyPublisher<___VARIABLE_sceneName___RouteScreenType, Never>
 
-        switch screenType {
-        // Alert
-        case .alert(let title, let message):
-            return Spacer().alert(isPresented: isVisibleScreen, content: {
-                Alert(title: Text(title), message: Text(message))
-            }).toAnyView()
+    @Environment(\.presentationMode) private var presentationMode
 
-        default:
-            return EmptyView().toAnyView()
+    var body: some View {
+        Router(routePublisher: routePublisher) { screen, isVisible in
+            switch screen {
+            case let .alert(title, message):
+                alertView(title: title, message: message, isVisible: isVisible)
+
+            case .exit:
+                exit()
+
+            case .none:
+                EmptyView()
+            }
         }
     }
 }
+
+// MARK: - Private - Views
+
+extension ___VARIABLE_sceneName___Router {
+
+    func alertView(title: String, message: String?, isVisible: Binding<Bool>) -> some View {
+        var messageText: Text? {
+            guard let message = message else { return nil }
+            return Text(message)
+        }
+
+        return Text("").alert(isPresented: isVisible, content: {
+            Alert(title: Text(title), message: messageText, dismissButton: .cancel())
+        })
+    }
+
+    func exit() -> some View {
+        presentationMode.wrappedValue.dismiss()
+        return EmptyView()
+    }
+}
+
+/*
+
+import SwiftUI
+import Combine
+
+struct Router<ScreenType,Content>: View where Content: View {
+
+    // MARK: Public
+
+    let routePublisher: AnyPublisher<ScreenType, Never>
+    let content: (ScreenType?, Binding<Bool>) -> Content
+
+    // MARK: Private
+
+    @Environment(\.presentationMode) private var presentationMode
+    @State private var screenType: ScreenType? = nil
+
+    // MARK: Live cycle
+
+    init(routePublisher: AnyPublisher<ScreenType, Never>,
+                @ViewBuilder content: @escaping (ScreenType?,  Binding<Bool>) -> Content) {
+        self.routePublisher = routePublisher
+        self.content = content
+    }
+
+    var body: some View {
+        let isVisible: Binding<Bool> = Binding<Bool>(get: { self.screenType != nil },
+                                                     set: { if !$0 { screenType = nil } })
+        return content(screenType, isVisible)
+            .onReceive(routePublisher) { self.screenType = $0 }
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+    }
+}
+*/
